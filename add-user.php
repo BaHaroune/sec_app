@@ -18,17 +18,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Récupération des données du formulaire
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $email = $_POST['email'];
+
+    // Hachage du mot de passe
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
     // Requête SQL pour insérer les données dans la base de données
-    $sql = "INSERT INTO utilisateurs (username, password, email) VALUES ('$username', '$password', '$email')";
+    $sql = "INSERT INTO login VALUES (?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $username, $hashed_password);
 
     // Exécution de la requête
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         echo "Utilisateur ajouté avec succès !";
     } else {
-        echo "Erreur : " . $sql . "<br>" . $conn->error;
+        echo "Erreur : " . $stmt->error;
     }
+
+    $stmt->close();
 }
 
 // Fermeture de la connexion à la base de données
